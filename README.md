@@ -7,8 +7,8 @@ or share the same entity slug.
 
 ## Preview
 
-The default layout uses a split glass card: plant image and text on the left,
-sensor bars on the right.
+The default layout uses a split glass card with the standard green card surface:
+plant image and text on the left, sensor bars on the right.
 
 ## Install With HACS
 

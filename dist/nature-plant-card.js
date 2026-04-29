@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.1.1";
+const NATURE_PLANT_CARD_VERSION = "0.1.2";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -267,17 +267,7 @@ class NaturePlantCard extends HTMLElement {
         }
 
         .left::before {
-          content: "";
-          position: absolute;
-          inset: 8px;
-          opacity: ${backgroundImage ? "0" : "0.12"};
-          background:
-            radial-gradient(ellipse at 12% 18%, var(--npc-accent) 0 8%, transparent 9%),
-            radial-gradient(ellipse at 16% 38%, var(--npc-accent) 0 8%, transparent 9%),
-            radial-gradient(ellipse at 88% 26%, var(--npc-accent) 0 8%, transparent 9%),
-            radial-gradient(ellipse at 82% 58%, var(--npc-accent) 0 8%, transparent 9%),
-            radial-gradient(ellipse at 16% 72%, var(--npc-accent) 0 8%, transparent 9%);
-          pointer-events: none;
+          content: none;
         }
 
         .image {
