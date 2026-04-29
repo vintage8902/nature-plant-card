@@ -67,12 +67,10 @@ class NaturePlantCard extends HTMLElement {
       throw new Error("You need to define a plant entity");
     }
 
-    this.config = {
-      sensors: {},
-      colors: {},
-      ranges: {},
-      ...config,
-    };
+    this.config = { ...config };
+    if (!this.config.sensors) this.config.sensors = {};
+    if (!this.config.colors) this.config.colors = {};
+    if (!this.config.ranges) this.config.ranges = {};
 
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
     this._render();
@@ -528,12 +526,10 @@ class NaturePlantCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    this.config = {
-      sensors: {},
-      colors: {},
-      ranges: {},
-      ...config,
-    };
+    this.config = { ...config };
+    if (!this.config.sensors) this.config.sensors = {};
+    if (!this.config.colors) this.config.colors = {};
+    if (!this.config.ranges) this.config.ranges = {};
     this._render();
   }
 
