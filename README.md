@@ -14,6 +14,8 @@ Bars show the detected ideal min/max range and a marker for the current value.
 If Plant Monitor exposes min/max number or sensor entities, the card will try to detect them
 automatically.
 
+Click a metric value to open Home Assistant more-info for that sensor.
+
 ## Install With HACS
 
 1. Open HACS in Home Assistant.

@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.2.3";
+const NATURE_PLANT_CARD_VERSION = "0.2.5";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -240,6 +240,17 @@ class NaturePlantCard extends HTMLElement {
     return { entityId, value, unit, marker, rangeStart, rangeWidth, outside };
   }
 
+  _showMoreInfo(entityId) {
+    if (!entityId) return;
+    this.dispatchEvent(
+      new CustomEvent("hass-more-info", {
+        detail: { entityId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   _displayData() {
     const plant = this._state(this.config.entity);
     const attrs = plant?.attributes || {};
@@ -299,7 +310,9 @@ class NaturePlantCard extends HTMLElement {
             <span class="ideal" style="left:${item.rangeStart}%; width:${item.rangeWidth}%"></span>
             <span class="marker" style="left:${item.marker}%"></span>
           </div>
-          <div class="value">${item.value} <small>${item.unit}</small></div>
+          <button class="value" ${item.entityId ? `data-entity="${this._escape(item.entityId)}"` : "disabled"}>
+            ${item.value} <small>${item.unit}</small>
+          </button>
         </div>
       `;
     }).join("");
@@ -474,10 +487,20 @@ class NaturePlantCard extends HTMLElement {
         }
 
         .value {
+          appearance: none;
+          border: 0;
+          padding: 0;
+          background: transparent;
+          color: var(--npc-text);
           font-size: 13px;
           font-weight: 700;
           text-align: right;
           white-space: nowrap;
+          cursor: pointer;
+        }
+
+        .value:disabled {
+          cursor: default;
         }
 
         .value small {
@@ -502,6 +525,13 @@ class NaturePlantCard extends HTMLElement {
         <div class="metrics">${metrics}</div>
       </ha-card>
     `;
+
+    this.shadowRoot.querySelectorAll(".value[data-entity]").forEach((button) => {
+      button.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        this._showMoreInfo(ev.currentTarget.dataset.entity);
+      });
+    });
   }
 }
 
@@ -533,11 +563,35 @@ class NaturePlantCardEditor extends HTMLElement {
     this._render();
   }
 
+  _orderedConfig(config) {
+    const { type, entity, name, species, image, background_image: backgroundImage, height, sensors, colors, ranges, ...rest } = config;
+    const ordered = {
+      type: type || "custom:nature-plant-card",
+    };
+
+    if (entity !== undefined) ordered.entity = entity;
+    if (name !== undefined) ordered.name = name;
+    if (species !== undefined) ordered.species = species;
+    if (image !== undefined) ordered.image = image;
+    if (backgroundImage !== undefined) ordered.background_image = backgroundImage;
+    if (height !== undefined) ordered.height = height;
+
+    Object.entries(rest).forEach(([key, value]) => {
+      if (value !== undefined) ordered[key] = value;
+    });
+
+    ordered.sensors = sensors || {};
+    ordered.colors = colors || {};
+    ordered.ranges = ranges || {};
+    return ordered;
+  }
+
   _fireConfigChanged(config) {
-    this.config = config;
+    const orderedConfig = this._orderedConfig(config);
+    this.config = orderedConfig;
     this.dispatchEvent(
       new CustomEvent("config-changed", {
-        detail: { config },
+        detail: { config: orderedConfig },
         bubbles: true,
         composed: true,
       }),
