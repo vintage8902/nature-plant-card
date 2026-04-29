@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.1.3";
+const NATURE_PLANT_CARD_VERSION = "0.1.4";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -222,7 +222,7 @@ class NaturePlantCard extends HTMLElement {
         }
 
         ha-card {
-          height: ${this.config.height || 230}px;
+          height: ${this.config.height || 150}px;
           padding: 0;
           border-radius: 18px;
           background: var(--npc-surface);
@@ -257,7 +257,7 @@ class NaturePlantCard extends HTMLElement {
           grid-template-rows: 1fr auto auto;
           justify-items: center;
           align-items: center;
-          padding: 18px 12px;
+          padding: 12px 10px;
           box-sizing: border-box;
           overflow: hidden;
           border-right: 1px solid var(--npc-border);
@@ -268,8 +268,8 @@ class NaturePlantCard extends HTMLElement {
         }
 
         .image {
-          width: 108px;
-          height: 108px;
+          width: 72px;
+          height: 72px;
           border-radius: 50%;
           background: linear-gradient(145deg, rgba(233,241,232,0.72), rgba(168,196,154,0.42));
           border: 2px solid color-mix(in srgb, var(--npc-accent) 82%, transparent);
@@ -288,18 +288,18 @@ class NaturePlantCard extends HTMLElement {
         }
 
         .image ha-icon {
-          width: 54px;
-          height: 54px;
+          width: 38px;
+          height: 38px;
           color: var(--npc-accent);
         }
 
         .name {
           z-index: 1;
           color: var(--npc-text);
-          font-size: 20px;
+          font-size: 16px;
           font-weight: 800;
-          line-height: 24px;
-          margin-top: 8px;
+          line-height: 19px;
+          margin-top: 6px;
           text-shadow: 0 1px 2px rgba(15,36,28,0.35);
           max-width: 100%;
           overflow: hidden;
@@ -310,8 +310,8 @@ class NaturePlantCard extends HTMLElement {
         .species {
           z-index: 1;
           color: var(--npc-muted);
-          font-size: 15px;
-          line-height: 20px;
+          font-size: 12px;
+          line-height: 15px;
           margin-top: 2px;
           max-width: 100%;
           overflow: hidden;
@@ -323,22 +323,22 @@ class NaturePlantCard extends HTMLElement {
           height: 100%;
           display: grid;
           align-content: center;
-          gap: 18px;
-          padding: 22px 18px;
+          gap: 10px;
+          padding: 12px 14px;
           box-sizing: border-box;
         }
 
         .metric {
           display: grid;
-          grid-template-columns: 28px 1fr minmax(74px, auto);
-          gap: 12px;
+          grid-template-columns: 22px 1fr minmax(62px, auto);
+          gap: 9px;
           align-items: center;
           color: var(--npc-text);
         }
 
         .metric ha-icon {
-          width: 26px;
-          height: 26px;
+          width: 21px;
+          height: 21px;
           color: var(--npc-accent);
         }
 
@@ -351,7 +351,7 @@ class NaturePlantCard extends HTMLElement {
         }
 
         .bar {
-          height: 9px;
+          height: 7px;
           border-radius: 999px;
           background: var(--npc-track);
           overflow: hidden;
@@ -373,7 +373,7 @@ class NaturePlantCard extends HTMLElement {
         }
 
         .value {
-          font-size: 15px;
+          font-size: 13px;
           font-weight: 700;
           text-align: right;
           white-space: nowrap;
@@ -381,7 +381,7 @@ class NaturePlantCard extends HTMLElement {
 
         .value small {
           color: color-mix(in srgb, var(--npc-text) 78%, transparent);
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 600;
         }
       </style>
@@ -667,7 +667,7 @@ class NaturePlantCardEditor extends HTMLElement {
             ${this._input("Species (Optional)", this.config.species, "Uses plant species")}
             ${this._input("Image (Optional)", this.config.image)}
             ${this._input("Background image (Optional)", this.config.background_image)}
-            ${this._input("Height", this.config.height, "230")}
+            ${this._input("Height", this.config.height, "150")}
           </div>
         </div>
 
