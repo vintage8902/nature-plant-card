@@ -48,9 +48,9 @@ type: custom:nature-plant-card
 entity: plant.plante_kontor_2
 name: Plante kontor
 species: Alocasia zebrina
-image: /local/img/plant.png
-background_image: /local/img/plant-card-bg.png
 ```
+
+Add `image` or `background_image` only when you want to use your own images.
 
 If the card cannot auto-detect the sensors, set them manually:
 
