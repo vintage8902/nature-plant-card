@@ -10,6 +10,10 @@ or share the same entity slug.
 The default layout uses a compact 150px split glass card with the standard green card surface:
 plant image and text on the left, sensor bars on the right.
 
+Bars show the detected ideal min/max range and a marker for the current value.
+If Plant Monitor exposes min/max sensors, the card will try to detect them
+automatically.
+
 ## Install With HACS
 
 1. Open HACS in Home Assistant.
@@ -62,6 +66,20 @@ sensors:
   moisture: sensor.plantesensor_kontor_moisture
   temperature: sensor.plantesensor_kontor_temperature
   conductivity: sensor.plantesensor_kontor_conductivity
+```
+
+You can also set numeric ranges manually:
+
+```yaml
+type: custom:nature-plant-card
+entity: plant.plante_kontor_2
+ranges:
+  moisture:
+    min: 25
+    max: 75
+  temperature:
+    min: 6
+    max: 35
 ```
 
 ## Visual Editor

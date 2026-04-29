@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.1.4";
+const NATURE_PLANT_CARD_VERSION = "0.2.0";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -14,6 +14,8 @@ const METRICS = [
     fallbackUnit: "lx",
     aliases: ["illuminance", "light", "lux", "ppfd", "dli"],
     max: 200,
+    minAliases: ["min_illuminance", "minimum_illuminance", "min_light", "minimum_light", "min_lysstyrke"],
+    maxAliases: ["max_illuminance", "maximum_illuminance", "max_light", "maximum_light", "maks_lysstyrke"],
   },
   {
     key: "moisture",
@@ -22,6 +24,8 @@ const METRICS = [
     fallbackUnit: "%",
     aliases: ["moisture", "humidity", "soil_moisture"],
     max: 100,
+    minAliases: ["min_moisture", "minimum_moisture", "min_jordfuktighet"],
+    maxAliases: ["max_moisture", "maximum_moisture", "maks_jordfuktighet"],
   },
   {
     key: "temperature",
@@ -30,6 +34,8 @@ const METRICS = [
     fallbackUnit: "°C",
     aliases: ["temperature", "temp", "soil_temperature"],
     max: 35,
+    minAliases: ["min_temperature", "minimum_temperature", "min_temperatur"],
+    maxAliases: ["max_temperature", "maximum_temperature", "maks_temperatur"],
   },
   {
     key: "conductivity",
@@ -38,6 +44,8 @@ const METRICS = [
     fallbackUnit: "µS/cm",
     aliases: ["conductivity", "fertility", "ec"],
     max: 200,
+    minAliases: ["min_conductivity", "minimum_conductivity", "min_fertility", "min_ledning"],
+    maxAliases: ["max_conductivity", "maximum_conductivity", "max_fertility", "maks_ledning"],
   },
 ];
 
@@ -121,6 +129,23 @@ class NaturePlantCard extends HTMLElement {
     return metric.aliases.some((alias) => haystack.includes(alias));
   }
 
+  _entityMatchesAliases(entityId, aliases) {
+    const entity = this._hass?.entities?.[entityId] || {};
+    const stateObj = this._state(entityId);
+    const haystack = [
+      entityId,
+      entity.name,
+      entity.original_name,
+      stateObj?.attributes?.friendly_name,
+      stateObj?.attributes?.device_class,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return aliases.some((alias) => haystack.includes(alias));
+  }
+
   _findSensor(metric) {
     const manual = this.config.sensors?.[metric.key];
     if (manual) return manual;
@@ -150,6 +175,45 @@ class NaturePlantCard extends HTMLElement {
     );
   }
 
+  _findRangeSensor(metric, side) {
+    const configured = this.config.ranges?.[metric.key]?.[side];
+    if (configured && String(configured).includes(".")) return configured;
+
+    const aliases = side === "min" ? metric.minAliases || [] : metric.maxAliases || [];
+    if (!aliases.length) return null;
+
+    const allSensors = Object.keys(this._hass?.states || {}).filter((entityId) => entityId.startsWith("sensor."));
+    const deviceId = this._plantDeviceId();
+
+    if (deviceId) {
+      const sameDevice = allSensors.find((entityId) => {
+        return this._hass?.entities?.[entityId]?.device_id === deviceId && this._entityMatchesAliases(entityId, aliases);
+      });
+      if (sameDevice) return sameDevice;
+    }
+
+    const slug = this._slug(this.config.entity).replace(/^plant_/, "");
+    return (
+      allSensors.find((entityId) => {
+        const id = this._slug(entityId);
+        return id.includes(slug) && this._entityMatchesAliases(entityId, aliases);
+      }) ||
+      allSensors.find((entityId) => this._entityMatchesAliases(entityId, aliases)) ||
+      null
+    );
+  }
+
+  _rangeValue(metric, side) {
+    const configured = this.config.ranges?.[metric.key]?.[side];
+    if (configured !== undefined && configured !== null && configured !== "" && !String(configured).includes(".")) {
+      return Number(configured);
+    }
+
+    const sensor = this._findRangeSensor(metric, side);
+    const value = Number(this._state(sensor)?.state);
+    return Number.isFinite(value) ? value : null;
+  }
+
   _metricData(metric) {
     const entityId = this._findSensor(metric);
     const stateObj = this._state(entityId);
@@ -157,10 +221,23 @@ class NaturePlantCard extends HTMLElement {
     const value = raw && !["unknown", "unavailable"].includes(raw) ? raw : "-";
     const unit = stateObj?.attributes?.unit_of_measurement || metric.fallbackUnit;
     const numeric = Number(value);
-    const max = Number(this.config.ranges?.[metric.key]?.max || metric.max);
-    const width = Number.isFinite(numeric) && max > 0 ? Math.max(0, Math.min(100, (numeric / max) * 100)) : 0;
+    const min = this._rangeValue(metric, "min");
+    const idealMax = this._rangeValue(metric, "max");
+    const scaleMax = Math.max(
+      Number(this.config.ranges?.[metric.key]?.scale_max || 0),
+      idealMax || 0,
+      metric.max,
+      Number.isFinite(numeric) ? numeric : 0,
+    );
+    const marker = Number.isFinite(numeric) && scaleMax > 0 ? Math.max(0, Math.min(100, (numeric / scaleMax) * 100)) : 0;
+    const rangeStart = min !== null && scaleMax > 0 ? Math.max(0, Math.min(100, (min / scaleMax) * 100)) : 0;
+    const rangeEnd = idealMax !== null && scaleMax > 0 ? Math.max(0, Math.min(100, (idealMax / scaleMax) * 100)) : 100;
+    const rangeWidth = Math.max(0, rangeEnd - rangeStart);
+    const outside =
+      Number.isFinite(numeric) &&
+      ((min !== null && numeric < min) || (idealMax !== null && numeric > idealMax));
 
-    return { entityId, value, unit, width };
+    return { entityId, value, unit, marker, rangeStart, rangeWidth, outside };
   }
 
   _displayData() {
@@ -201,7 +278,10 @@ class NaturePlantCard extends HTMLElement {
       return `
         <div class="metric ${metric.cls}">
           <ha-icon icon="${metric.icon}"></ha-icon>
-          <div class="bar"><span style="width:${item.width}%"></span></div>
+          <div class="range-bar ${item.outside ? "outside" : ""}">
+            <span class="ideal" style="left:${item.rangeStart}%; width:${item.rangeWidth}%"></span>
+            <span class="marker" style="left:${item.marker}%"></span>
+          </div>
           <div class="value">${item.value} <small>${item.unit}</small></div>
         </div>
       `;
@@ -350,25 +430,44 @@ class NaturePlantCard extends HTMLElement {
           color: var(--npc-warning);
         }
 
-        .bar {
+        .range-bar {
+          position: relative;
           height: 7px;
           border-radius: 999px;
           background: var(--npc-track);
-          overflow: hidden;
         }
 
-        .bar span {
+        .ideal {
+          position: absolute;
+          top: 0;
           display: block;
           height: 100%;
           border-radius: 999px;
           background: var(--npc-accent);
         }
 
-        .metric.light .bar span {
+        .marker {
+          position: absolute;
+          top: 50%;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: var(--npc-text);
+          border: 1px solid rgba(15,36,28,0.55);
+          box-shadow: 0 0 0 2px rgba(234,216,181,0.14);
+          transform: translate(-50%, -50%);
+        }
+
+        .range-bar.outside .marker {
+          background: var(--npc-warning);
+          box-shadow: 0 0 0 2px rgba(233,105,90,0.18);
+        }
+
+        .metric.light .ideal {
           background: linear-gradient(90deg, var(--npc-light), var(--npc-text));
         }
 
-        .metric.warning .bar span {
+        .metric.warning .ideal {
           background: linear-gradient(90deg, var(--npc-warning), #F07C6D);
         }
 
