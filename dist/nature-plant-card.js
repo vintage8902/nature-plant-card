@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.2.0";
+const NATURE_PLANT_CARD_VERSION = "0.2.1";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -24,8 +24,8 @@ const METRICS = [
     fallbackUnit: "%",
     aliases: ["moisture", "humidity", "soil_moisture"],
     max: 100,
-    minAliases: ["min_moisture", "minimum_moisture", "min_jordfuktighet"],
-    maxAliases: ["max_moisture", "maximum_moisture", "maks_jordfuktighet"],
+    minAliases: ["min_moisture", "minimum_moisture", "min_soil_moisture", "min_jordfuktighet"],
+    maxAliases: ["max_moisture", "maximum_moisture", "max_soil_moisture", "maks_jordfuktighet"],
   },
   {
     key: "temperature",
@@ -44,8 +44,8 @@ const METRICS = [
     fallbackUnit: "µS/cm",
     aliases: ["conductivity", "fertility", "ec"],
     max: 200,
-    minAliases: ["min_conductivity", "minimum_conductivity", "min_fertility", "min_ledning"],
-    maxAliases: ["max_conductivity", "maximum_conductivity", "max_fertility", "maks_ledning"],
+    minAliases: ["min_conductivity", "minimum_conductivity", "min_fertility", "min_ledning", "min_ledningsevne"],
+    maxAliases: ["max_conductivity", "maximum_conductivity", "max_fertility", "maks_ledning", "maks_ledningsevne"],
   },
 ];
 
@@ -182,11 +182,13 @@ class NaturePlantCard extends HTMLElement {
     const aliases = side === "min" ? metric.minAliases || [] : metric.maxAliases || [];
     if (!aliases.length) return null;
 
-    const allSensors = Object.keys(this._hass?.states || {}).filter((entityId) => entityId.startsWith("sensor."));
+    const allRangeEntities = Object.keys(this._hass?.states || {}).filter((entityId) => {
+      return entityId.startsWith("sensor.") || entityId.startsWith("number.");
+    });
     const deviceId = this._plantDeviceId();
 
     if (deviceId) {
-      const sameDevice = allSensors.find((entityId) => {
+      const sameDevice = allRangeEntities.find((entityId) => {
         return this._hass?.entities?.[entityId]?.device_id === deviceId && this._entityMatchesAliases(entityId, aliases);
       });
       if (sameDevice) return sameDevice;
@@ -194,11 +196,11 @@ class NaturePlantCard extends HTMLElement {
 
     const slug = this._slug(this.config.entity).replace(/^plant_/, "");
     return (
-      allSensors.find((entityId) => {
+      allRangeEntities.find((entityId) => {
         const id = this._slug(entityId);
         return id.includes(slug) && this._entityMatchesAliases(entityId, aliases);
       }) ||
-      allSensors.find((entityId) => this._entityMatchesAliases(entityId, aliases)) ||
+      allRangeEntities.find((entityId) => this._entityMatchesAliases(entityId, aliases)) ||
       null
     );
   }

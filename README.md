@@ -11,7 +11,7 @@ The default layout uses a compact 150px split glass card with the standard green
 plant image and text on the left, sensor bars on the right.
 
 Bars show the detected ideal min/max range and a marker for the current value.
-If Plant Monitor exposes min/max sensors, the card will try to detect them
+If Plant Monitor exposes min/max number or sensor entities, the card will try to detect them
 automatically.
 
 ## Install With HACS
