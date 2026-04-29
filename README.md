@@ -104,6 +104,7 @@ colors:
   text: "#EAD8B5"
   muted: rgba(234,216,181,0.84)
   light: "#F2C75D"
+  moisture: "#86B8C8"
   warning: "#E9695A"
   track: rgba(168,196,154,0.16)
 ```

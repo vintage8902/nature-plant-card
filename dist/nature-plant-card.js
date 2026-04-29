@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.2.1";
+const NATURE_PLANT_CARD_VERSION = "0.2.2";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -20,7 +20,7 @@ const METRICS = [
   {
     key: "moisture",
     icon: "mdi:water",
-    cls: "",
+    cls: "moisture",
     fallbackUnit: "%",
     aliases: ["moisture", "humidity", "soil_moisture"],
     max: 100,
@@ -270,6 +270,7 @@ class NaturePlantCard extends HTMLElement {
       text: "#EAD8B5",
       muted: "rgba(234,216,181,0.84)",
       light: "#F2C75D",
+      moisture: "#86B8C8",
       warning: "#E9695A",
       track: "rgba(168,196,154,0.16)",
       ...this.config.colors,
@@ -299,6 +300,7 @@ class NaturePlantCard extends HTMLElement {
           --npc-text: ${colors.text};
           --npc-muted: ${colors.muted};
           --npc-light: ${colors.light};
+          --npc-moisture: ${colors.moisture};
           --npc-warning: ${colors.warning};
           --npc-track: ${colors.track};
         }
@@ -428,6 +430,10 @@ class NaturePlantCard extends HTMLElement {
           color: var(--npc-light);
         }
 
+        .metric.moisture ha-icon {
+          color: var(--npc-moisture);
+        }
+
         .metric.warning ha-icon {
           color: var(--npc-warning);
         }
@@ -467,6 +473,10 @@ class NaturePlantCard extends HTMLElement {
 
         .metric.light .ideal {
           background: linear-gradient(90deg, var(--npc-light), var(--npc-text));
+        }
+
+        .metric.moisture .ideal {
+          background: linear-gradient(90deg, var(--npc-moisture), var(--npc-accent));
         }
 
         .metric.warning .ideal {
@@ -791,6 +801,7 @@ class NaturePlantCardEditor extends HTMLElement {
               ["text", "Text"],
               ["muted", "Muted text"],
               ["light", "Light"],
+              ["moisture", "Moisture"],
               ["warning", "Warning"],
               ["track", "Track"],
             ]
@@ -813,7 +824,7 @@ class NaturePlantCardEditor extends HTMLElement {
     });
 
     const colorInputs = this.shadowRoot.querySelectorAll("details:nth-of-type(2) input");
-    ["surface", "border", "accent", "text", "muted", "light", "warning", "track"].forEach((key, index) => {
+    ["surface", "border", "accent", "text", "muted", "light", "moisture", "warning", "track"].forEach((key, index) => {
       colorInputs[index]?.addEventListener("change", (ev) => this._setNested("colors", key, ev.target.value.trim()));
     });
   }
