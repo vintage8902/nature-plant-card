@@ -49,6 +49,7 @@ entity: plant.plante_kontor_2
 name: Plante kontor
 species: Alocasia zebrina
 image: /local/img/plant.png
+background_image: /local/img/plant-card-bg.png
 ```
 
 If the card cannot auto-detect the sensors, set them manually:
@@ -69,6 +70,7 @@ The card includes a visual Lovelace editor for:
 
 - Plant entity
 - Optional name, species, image, and height
+- Optional decorative background image
 - Sensor overrides
 - Colors
 

@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.1.0";
+const NATURE_PLANT_CARD_VERSION = "0.1.1";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -52,6 +52,7 @@ class NaturePlantCard extends HTMLElement {
       name: "Jungle Pal",
       species: "Alocasia zebrina",
       image: "/local/img/plant.png",
+      background_image: "/local/img/plant-card-bg.png",
     };
   }
 
@@ -184,6 +185,7 @@ class NaturePlantCard extends HTMLElement {
     if (!this.shadowRoot || !this._hass || !this.config) return;
 
     const data = this._displayData();
+    const backgroundImage = this.config.background_image || "";
     const colors = {
       surface: "rgba(60, 94, 74, 0.72)",
       border: "rgba(168, 196, 154, 0.18)",
@@ -232,6 +234,23 @@ class NaturePlantCard extends HTMLElement {
           box-sizing: border-box;
           display: grid;
           grid-template-columns: 42% 58%;
+          position: relative;
+        }
+
+        ha-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          opacity: ${backgroundImage ? "1" : "0"};
+          background-image: ${backgroundImage ? `url("${this._escape(backgroundImage)}")` : "none"};
+          background-size: cover;
+          background-position: center;
+          pointer-events: none;
+        }
+
+        ha-card > * {
+          position: relative;
+          z-index: 1;
         }
 
         .left {
@@ -251,7 +270,7 @@ class NaturePlantCard extends HTMLElement {
           content: "";
           position: absolute;
           inset: 8px;
-          opacity: 0.12;
+          opacity: ${backgroundImage ? "0" : "0.12"};
           background:
             radial-gradient(ellipse at 12% 18%, var(--npc-accent) 0 8%, transparent 9%),
             radial-gradient(ellipse at 16% 38%, var(--npc-accent) 0 8%, transparent 9%),
@@ -660,6 +679,7 @@ class NaturePlantCardEditor extends HTMLElement {
             ${this._input("Name (Optional)", this.config.name, "Uses plant name")}
             ${this._input("Species (Optional)", this.config.species, "Uses plant species")}
             ${this._input("Image (Optional)", this.config.image, "/local/img/plant.png")}
+            ${this._input("Background image (Optional)", this.config.background_image, "/local/img/plant-card-bg.png")}
             ${this._input("Height", this.config.height, "230")}
           </div>
         </div>
@@ -700,7 +720,7 @@ class NaturePlantCardEditor extends HTMLElement {
     });
 
     const topInputs = this.shadowRoot.querySelectorAll(".section .grid input");
-    ["name", "species", "image", "height"].forEach((key, index) => {
+    ["name", "species", "image", "background_image", "height"].forEach((key, index) => {
       topInputs[index]?.addEventListener("change", (ev) => this._setValue(key, ev.target.value.trim()));
     });
 
