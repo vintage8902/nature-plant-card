@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.2.5";
+const NATURE_PLANT_CARD_VERSION = "0.2.6";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -55,19 +55,11 @@ class NaturePlantCard extends HTMLElement {
   }
 
   static getStubConfig() {
-    return {
-      entity: "plant.my_plant",
-      name: "Jungle Pal",
-      species: "Alocasia zebrina",
-    };
+    return {};
   }
 
   setConfig(config) {
-    if (!config?.entity) {
-      throw new Error("You need to define a plant entity");
-    }
-
-    this.config = { ...config };
+    this.config = { ...(config || {}) };
     if (!this.config.sensors) this.config.sensors = {};
     if (!this.config.colors) this.config.colors = {};
     if (!this.config.ranges) this.config.ranges = {};
@@ -107,6 +99,7 @@ class NaturePlantCard extends HTMLElement {
   }
 
   _plantDeviceId() {
+    if (!this.config.entity) return null;
     return this._hass?.entities?.[this.config.entity]?.device_id || null;
   }
 
@@ -147,6 +140,7 @@ class NaturePlantCard extends HTMLElement {
   _findSensor(metric) {
     const manual = this.config.sensors?.[metric.key];
     if (manual) return manual;
+    if (!this.config.entity) return null;
 
     const plantAttrs = this._state(this.config.entity)?.attributes || {};
     const attrValue = plantAttrs[metric.key] || plantAttrs[`${metric.key}_sensor`];
@@ -176,6 +170,7 @@ class NaturePlantCard extends HTMLElement {
   _findRangeSensor(metric, side) {
     const configured = this.config.ranges?.[metric.key]?.[side];
     if (configured && String(configured).includes(".")) return configured;
+    if (!this.config.entity) return null;
 
     const aliases = side === "min" ? metric.minAliases || [] : metric.maxAliases || [];
     if (!aliases.length) return null;
@@ -255,7 +250,7 @@ class NaturePlantCard extends HTMLElement {
     const plant = this._state(this.config.entity);
     const attrs = plant?.attributes || {};
     return {
-      name: this.config.name || attrs.friendly_name || this._friendlyName(this.config.entity) || "Plant",
+      name: this.config.name || attrs.friendly_name || this._friendlyName(this.config.entity) || "Velg plante",
       species:
         this.config.species ||
         attrs.species ||

@@ -94,6 +94,9 @@ The card includes a visual Lovelace editor for:
 - Sensor overrides
 - Colors
 
+New cards start without a prefilled plant entity, so choose the plant from the
+entity picker first.
+
 ## Colors
 
 ```yaml
