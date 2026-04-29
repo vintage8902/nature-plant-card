@@ -1,4 +1,4 @@
-const NATURE_PLANT_CARD_VERSION = "0.2.2";
+const NATURE_PLANT_CARD_VERSION = "0.2.3";
 
 console.info(
   `%c NATURE-PLANT-CARD %c v${NATURE_PLANT_CARD_VERSION} `,
@@ -278,8 +278,24 @@ class NaturePlantCard extends HTMLElement {
 
     const metrics = METRICS.map((metric) => {
       const item = this._metricData(metric);
+      const metricColor =
+        metric.key === "illuminance"
+          ? "var(--npc-light)"
+          : metric.key === "moisture"
+            ? "var(--npc-moisture)"
+            : metric.key === "conductivity"
+              ? "var(--npc-warning)"
+              : "var(--npc-accent)";
+      const idealBackground =
+        metric.key === "illuminance"
+          ? "linear-gradient(90deg, var(--npc-light), var(--npc-text))"
+          : metric.key === "moisture"
+            ? "linear-gradient(90deg, var(--npc-moisture), var(--npc-accent))"
+            : metric.key === "conductivity"
+              ? "linear-gradient(90deg, var(--npc-warning), #F07C6D)"
+              : "var(--npc-accent)";
       return `
-        <div class="metric ${metric.cls}">
+        <div class="metric ${metric.cls}" style="--metric-color:${metricColor}; --metric-ideal:${idealBackground};">
           <ha-icon icon="${metric.icon}"></ha-icon>
           <div class="range-bar ${item.outside ? "outside" : ""}">
             <span class="ideal" style="left:${item.rangeStart}%; width:${item.rangeWidth}%"></span>
@@ -423,19 +439,7 @@ class NaturePlantCard extends HTMLElement {
         .metric ha-icon {
           width: 21px;
           height: 21px;
-          color: var(--npc-accent);
-        }
-
-        .metric.light ha-icon {
-          color: var(--npc-light);
-        }
-
-        .metric.moisture ha-icon {
-          color: var(--npc-moisture);
-        }
-
-        .metric.warning ha-icon {
-          color: var(--npc-warning);
+          color: var(--metric-color);
         }
 
         .range-bar {
@@ -451,7 +455,7 @@ class NaturePlantCard extends HTMLElement {
           display: block;
           height: 100%;
           border-radius: 999px;
-          background: var(--npc-accent);
+          background: var(--metric-ideal);
         }
 
         .marker {
@@ -469,18 +473,6 @@ class NaturePlantCard extends HTMLElement {
         .range-bar.outside .marker {
           background: var(--npc-warning);
           box-shadow: 0 0 0 2px rgba(233,105,90,0.18);
-        }
-
-        .metric.light .ideal {
-          background: linear-gradient(90deg, var(--npc-light), var(--npc-text));
-        }
-
-        .metric.moisture .ideal {
-          background: linear-gradient(90deg, var(--npc-moisture), var(--npc-accent));
-        }
-
-        .metric.warning .ideal {
-          background: linear-gradient(90deg, var(--npc-warning), #F07C6D);
         }
 
         .value {
